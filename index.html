@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crud Jquery + Ajax With Laravel Api</title>
+    <script src="jquery-3.4.1.js"></script>  <!-- lokal  -->
+    <!-- <script src="https://code.jquery.com/jquery-3.4.1.js" integrity="sha256-WpOohJOqMqqyKL9FccASB9O0KwACQJpFTUBLTYOVvVU=" crossorigin="anonymous"> </script>--> <!-- online -->
+    <style>
+        table { 
+            width: 750px; 
+            border-collapse: collapse; 
+            margin:50px auto;
+            }
+
+        
+        tr:nth-of-type(odd) { 
+            background: #eee; 
+            }
+
+        th { 
+            background: #3498db; 
+            color: white; 
+            font-weight: bold; 
+            }
+
+        td, th { 
+            padding: 10px; 
+            border: 1px solid #ccc; 
+            text-align: left; 
+            font-size: 18px;
+            }
+
+        @media 
+        only screen and (max-width: 760px),
+        (min-device-width: 768px) and (max-device-width: 1024px)  {
+
+            table { 
+                width: 100%; 
+            }
+
+            table, thead, tbody, th, td, tr { 
+                display: block; 
+            }
+            
+            thead tr { 
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+            
+            tr { border: 1px solid #ccc; }
+            
+            td { 
+                border: none;
+                border-bottom: 1px solid #eee; 
+                position: relative;
+                padding-left: 50%; 
+            }
+
+            td:before { 
+                position: absolute;
+                top: 6px;
+                left: 6px;
+                width: 45%; 
+                padding-right: 10px; 
+                white-space: nowrap;                
+                content: attr(data-column);
+
+                color: #000;
+                font-weight: bold;
+            }
+
+        }
+
+        body {
+            text-align: center;
+        }
+        form {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+            <h1>Single Page Crud Jquery+Ajax Dengan Laravel Api</h1>
+            <span id="idArea" hidden>
+            <label for="id">Id</label><br>
+            <input type="text" id="id" readonly> <br>
+            </span>
+
+            <label for="siswa_nama">Siswa Nama</label><br>
+            <input type="text" id="siswa_nama" name="siswa_nama"><br>
+
+            <label for="siswa_alamat">Siswa Alamat</label><br>
+            <input type="text" id="siswa_alamat" name="siswa_alamat"><br>
+
+            <label for="siswa_kelas">Siswa Kelas</label><br>
+            <input type="text" id="siswa_kelas" name="siswa_kelas"><br>
+
+            <input type="button" onclick="insertSiswa()" id="btnSimpan" value="Simpan"><br>
+            <input type="button" onclick="ubahSiswa()" id="btnSimpanUbah" value="Simpan Perubahan" hidden>
+
+            <input type="button" id="btnBatal" value="Batal">
+        
+        <table border="1" align="center">
+            <center><h3>Data Siswa</h3></center>
+            <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nama</th>
+                    <th>Alamat</th>
+                    <th>Kelas</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody id="body">
+
+            </tbody>
+        </table>
+</body>
+</html>
+<script>
+
+    getSiswa();
+    function getSiswa(){
+        jQuery.ajax({
+            type: "GET",
+            url: 'http://localhost:8000/api/siswa',
+            success: function (data) {
+            $("#body").empty()
+            data.values.forEach(dataSiswa => {
+                $("#body").append("<tr><td class=id>" + dataSiswa.id + "</td>\
+                <td class=siswa_nama>"   + dataSiswa.siswa_nama + "</td>\
+                <td class=siswa_alamat>" + dataSiswa.siswa_alamat + "</td>\
+                <td class=siswa_kelas>"  + dataSiswa.siswa_kelas + "</td>\
+                <td><button class=ubah>Ubah</button>\
+                <button onclick=hapusSiswa("+ dataSiswa.id +")>Hapus</button></td></tr>");
+                }
+            );
+            },
+            async: false
+        })    
+    }
+
+    function insertSiswa() {
+        var siswa_nama      = $('#siswa_nama').val();
+        var siswa_alamat    = $('#siswa_alamat').val();
+        var siswa_kelas     = $('#siswa_kelas').val();
+        jQuery.ajax({
+            dataType: 'json',
+            type: "POST",
+            url: 'http://localhost:8000/api/siswa/store',
+            data: {
+                siswa_nama  : siswa_nama,
+                siswa_alamat: siswa_alamat,
+                siswa_kelas : siswa_kelas
+            },
+            success: function (data) {
+                getSiswa();
+            },
+            error: function () {
+                alert('failure');
+            }
+        })
+    }
+
+    function hapusSiswa(id) {
+        if (confirm('Yakin Hapus?')) {
+            jQuery.ajax({
+                dataType: 'json',
+                type: "GET",
+                url: 'http://localhost:8000/api/siswa/delete/'+id,
+                success: function (data) {
+                    getSiswa();
+                },
+                error: function () {
+                    alert('failure');
+                }
+            })
+        }
+    }
+
+    $('.ubah').click(function(){
+            var id              = $(this).closest('tr').find('td.id').text();
+            var siswa_nama      = $(this).closest('tr').find('td.siswa_nama').text();
+            var siswa_alamat    = $(this).closest('tr').find('td.siswa_alamat').text();
+            var siswa_kelas     = $(this).closest('tr').find('td.siswa_kelas').text();
+            $('#siswa_nama').val(siswa_nama);
+            $('#siswa_alamat').val(siswa_alamat);
+            $('#siswa_kelas').val(siswa_kelas);
+            $('#id').val(id);
+            $('#idArea').show();
+            $('#btnSimpanUbah').show();
+            $('#btnSimpan').hide();  
+    });
+
+    function ubahSiswa() {
+        var id              = $('#id').val();
+        var siswa_nama      = $('#siswa_nama').val();
+        var siswa_alamat    = $('#siswa_alamat').val();
+        var siswa_kelas     = $('#siswa_kelas').val();
+        
+        jQuery.ajax({
+            dataType: 'json',
+            type: "POST",
+            url: 'http://localhost:8000/api/siswa/update/'+id,
+            data: {
+                siswa_nama  : siswa_nama,
+                siswa_alamat: siswa_alamat,
+                siswa_kelas : siswa_kelas
+            },
+            success: function (data) {
+                getSiswa();
+            },
+            error: function () {
+                alert('failure');
+            }
+        })
+    }
+
+    $('#btnBatal').click(function(){
+            $('#btnSimpanUbah').hide();
+            $('#idArea').hide();
+            $('#btnSimpan').show();
+            $('#siswa_nama').val('');
+            $('#siswa_alamat').val('');
+            $('#siswa_kelas').val('');
+    });
+
+</script>
